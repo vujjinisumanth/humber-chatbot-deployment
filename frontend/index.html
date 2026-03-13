@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Humber Program Matcher</title>
+  <style>
+    :root {
+      --blue: #002D62;
+      --gold: #FDB913;
+      --bg:   #F6F7F9;
+      --white:#ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background: var(--bg); color: #111; }
+
+    /* HEADER */
+    header {
+      background: #111;
+      border-bottom: 4px solid var(--gold);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { color: white; font-size: 26px; font-weight: 800; }
+    header p  { color: #ccc; font-size: 13px; margin-top: 2px; }
+
+    /* LAYOUT */
+    .container { max-width: 1200px; margin: 28px auto; padding: 0 24px; }
+    .grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid #E2E6EC;
+      height: fit-content;
+    }
+    .sidebar h3 {
+      color: #002D62;
+      margin-bottom: 14px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    /* LABELS */
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #002D62;
+      display: block;
+      margin: 12px 0 4px;
+    }
+
+    /* DROPDOWNS & RANGE */
+    select, input[type=range] {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #D6D9DE;
+      font-size: 13px;
+      color: #111111;
+      background: #ffffff;
+    }
+
+    /* CHECKBOX LISTS */
+    .multi-check {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 140px;
+      overflow-y: auto;
+      border: 1px solid #D6D9DE;
+      border-radius: 8px;
+      padding: 8px;
+      background: #ffffff;
+    }
+    .multi-check label {
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #111111;
+      font-size: 13px;
+    }
+    #topKVal { font-weight: 700; color: var(--blue); }
+
+    /* MAIN CARD */
+    .main-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid #E2E6EC;
+    }
+    .main-card h3 { color: var(--blue); margin-bottom: 12px; }
+
+    textarea {
+      width: 100%; height: 180px; padding: 12px;
+      border-radius: 10px; border: 1px solid #D6D9DE;
+      font-size: 14px; resize: vertical;
+      color: #111111;
+    }
+
+    .upload-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+    .upload-row input[type=file] { font-size: 13px; }
+
+    /* BUTTON */
+    .btn {
+      background: var(--blue); color: white; border: none;
+      padding: 12px 28px; border-radius: 10px; font-size: 15px;
+      font-weight: 700; cursor: pointer; width: 100%;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #013B7A; }
+
+    /* RESULTS */
+    #results { margin-top: 24px; }
+
+    .best-match {
+      background: linear-gradient(135deg, var(--blue), #013B7A);
+      color: white; border-radius: 14px; padding: 20px;
+      margin-bottom: 20px;
+    }
+    .best-match h3 { color: var(--gold); margin-bottom: 10px; }
+    .best-match p  { font-size: 14px; line-height: 1.8; }
+    .best-match a  { color: var(--gold); }
+
+    .match-badge {
+      display: inline-block; background: var(--gold); color: #111;
+      font-weight: 800; font-size: 20px; padding: 6px 14px;
+      border-radius: 20px; margin-bottom: 10px;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--blue); color: white;
+      padding: 10px 12px; text-align: left;
+    }
+    tbody tr:nth-child(even) { background: #f0f4fa; }
+    tbody td { padding: 9px 12px; border-bottom: 1px solid #E2E6EC; color: #111111; }
+    tbody td a { color: var(--blue); text-decoration: none; font-weight: 600; }
+    tbody td a:hover { text-decoration: underline; }
+
+    .status { font-size: 13px; color: #333333; margin-bottom: 10px; font-weight: 600; }
+    .loading { text-align: center; padding: 30px; color: #555; font-size: 15px; }
+    .error { color: red; padding: 12px; background: #fff0f0; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1> Humber Program Matcher</h1>
+    <p>Match a job description to the best Humber College programs</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- SIDEBAR FILTERS -->
+    <div class="sidebar">
+      <h3> Settings & Filters</h3>
+
+      <label>Top matches: <span id="topKVal">10</span></label>
+      <input type="range" id="topK" min="5" max="25" value="10"
+             oninput="document.getElementById('topKVal').textContent=this.value"/>
+
+      <label>Credential Type</label>
+      <div class="multi-check" id="credList">
+        <label><input type="checkbox" value="Loading..."> Loading...</label>
+      </div>
+
+      <label>PGWP-Eligible</label>
+      <select id="pgwp">
+        <option>All</option>
+        <option>Yes</option>
+        <option>No</option>
+        <option>Not Available</option>
+      </select>
+
+      <label>Start Dates</label>
+      <select id="startDate">
+        <option>All</option>
+        <option>January</option>
+        <option>May</option>
+        <option>September</option>
+      </select>
+
+      <label>Program Length</label>
+      <div class="multi-check" id="lengthList"></div>
+
+      <label>Work Integrated Learning</label>
+      <select id="wil">
+        <option>All</option>
+        <option>Yes</option>
+        <option>Not Available</option>
+      </select>
+    </div>
+
+    <!-- MAIN AREA -->
+    <div>
+      <div class="main-card">
+        <h3> Job Description</h3>
+        <textarea id="jdText" placeholder="Paste the full job posting here..."></textarea>
+        <div class="upload-row">
+          <span style="font-size:13px; color:#333; font-weight:600;">Or upload a .txt file:</span>
+          <input type="file" id="fileInput" accept=".txt"/>
+        </div>
+        <button class="btn" onclick="findPrograms()"> Find Best Programs</button>
+      </div>
+
+      <div id="results"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Change this to your hosted backend URL after deploying ──
+  const API_URL = "http://localhost:8000";
+
+  // Load credential filter options from backend
+  async function loadFilters() {
+    try {
+      const res  = await fetch(`${API_URL}/filters`);
+      const data = await res.json();
+      const credList = document.getElementById("credList");
+      credList.innerHTML = data.credentials.map(c =>
+        `<label><input type="checkbox" value="${c}"> ${c}</label>`
+      ).join("");
+    } catch(e) {
+      console.error("Could not load filters", e);
+    }
+  }
+
+  // Fill program length checkboxes
+  const lengths = [
+    "6 weeks","7 weeks","8 weeks","9 weeks","10 weeks",
+    "1 semester","2 semesters","3 semesters","4 semesters","5 semesters",
+    "6 semesters","7 semesters","8 semesters","9 semesters"
+  ];
+  document.getElementById("lengthList").innerHTML =
+    lengths.map(l =>
+      `<label><input type="checkbox" value="${l}"> ${l}</label>`
+    ).join("");
+
+  // Read uploaded .txt file into textarea
+  document.getElementById("fileInput").addEventListener("change", function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById("jdText").value = e.target.result;
+    reader.readAsText(file);
+  });
+
+  async function findPrograms() {
+    const jdText = document.getElementById("jdText").value.trim();
+    const topK   = document.getElementById("topK").value;
+    const pgwp   = document.getElementById("pgwp").value;
+    const start  = document.getElementById("startDate").value;
+    const wil    = document.getElementById("wil").value;
+
+    const credChecked   = [...document.querySelectorAll("#credList input:checked")]
+                          .map(c => c.value).join(",");
+    const lengthChecked = [...document.querySelectorAll("#lengthList input:checked")]
+                          .map(c => c.value).join(",");
+
+    if (!jdText) {
+      document.getElementById("results").innerHTML =
+        '<div class="error"> Please paste or upload a job description first.</div>';
+      return;
+    }
+
+    document.getElementById("results").innerHTML =
+      '<div class="loading">⏳ Finding best matches...</div>';
+
+    try {
+      const form = new FormData();
+      form.append("jd_text",         jdText);
+      form.append("top_k",           topK);
+      form.append("pgwp_choice",     pgwp);
+      form.append("start_choice",    start);
+      form.append("wil_choice",      wil);
+      form.append("cred_selected",   credChecked);
+      form.append("length_selected", lengthChecked);
+
+      const res  = await fetch(`${API_URL}/match`, { method: "POST", body: form });
+      const data = await res.json();
+
+      if (!data.results || data.results.length === 0) {
+        document.getElementById("results").innerHTML =
+          '<div class="error">No matches found. Try changing your filters.</div>';
+        return;
+      }
+
+      renderResults(data);
+    } catch(e) {
+      document.getElementById("results").innerHTML =
+        `<div class="error"> Could not connect to backend. Error: ${e.message}</div>`;
+    }
+  }
+
+  function renderResults(data) {
+    const best = data.results[0];
+    let html = `
+      <div class="best-match">
+        <h3>🏆 Best Match</h3>
+        <div class="match-badge">${best.match_pct}% Match</div>
+        <p>
+          <b>Program:</b> ${best.program_name}<br>
+          <b>Faculty:</b> ${best.faculty}<br>
+          <b>Credential:</b> ${best.credential}<br>
+          <b>PGWP-Eligible:</b> ${best.pgwp}<br>
+          <b>Start Dates:</b> ${best.start_dates}<br>
+          <b>Program Length:</b> ${best.length}<br>
+          <b>Work Integrated Learning:</b> ${best.wil}<br>
+          <b>Link:</b> <a href="${best.url}" target="_blank">${best.url}</a>
+        </p>
+      </div>
+      <div class="main-card">
+        <p class="status">Searched <b>${data.programs_searched}</b> programs — showing top <b>${data.top_k}</b></p>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Program Name</th><th>Faculty</th>
+              <th>Credential</th><th>PGWP</th><th>Length</th>
+              <th>WIL</th><th>Match %</th><th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    data.results.forEach((r, i) => {
+      html += `
+        <tr>
+          <td>${i + 1}</td>
+          <td><b>${r.program_name}</b></td>
+          <td>${r.faculty}</td>
+          <td>${r.credential}</td>
+          <td>${r.pgwp}</td>
+          <td>${r.length}</td>
+          <td>${r.wil}</td>
+          <td><b>${r.match_pct}%</b></td>
+          <td><a href="${r.url}" target="_blank">View →</a></td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+    document.getElementById("results").innerHTML = html;
+  }
+
+  // Load filters when page opens
+  loadFilters();
+</script>
+</body>
+</html>
