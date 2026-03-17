@@ -158,7 +158,7 @@
 
 <header>
   <div>
-    <h1> Humber Program Matcher</h1>
+    <h1>🎓 Humber Program Matcher</h1>
     <p>Match a job description to the best Humber College programs</p>
   </div>
 </header>
@@ -168,7 +168,7 @@
 
     <!-- SIDEBAR FILTERS -->
     <div class="sidebar">
-      <h3> Settings & Filters</h3>
+      <h3>⚙️ Settings & Filters</h3>
 
       <label>Top matches: <span id="topKVal">10</span></label>
       <input type="range" id="topK" min="5" max="25" value="10"
@@ -176,7 +176,7 @@
 
       <label>Credential Type</label>
       <div class="multi-check" id="credList">
-        <label><input type="checkbox" value="Loading..."> Loading...</label>
+        <label><input type="checkbox" disabled> Loading...</label>
       </div>
 
       <label>PGWP-Eligible</label>
@@ -209,13 +209,13 @@
     <!-- MAIN AREA -->
     <div>
       <div class="main-card">
-        <h3> Job Description</h3>
+        <h3>📋 Job Description</h3>
         <textarea id="jdText" placeholder="Paste the full job posting here..."></textarea>
         <div class="upload-row">
           <span style="font-size:13px; color:#333; font-weight:600;">Or upload a .txt file:</span>
           <input type="file" id="fileInput" accept=".txt"/>
         </div>
-        <button class="btn" onclick="findPrograms()"> Find Best Programs</button>
+        <button class="btn" onclick="findPrograms()">🔍 Find Best Programs</button>
       </div>
 
       <div id="results"></div>
@@ -225,8 +225,6 @@
 </div>
 
 <script>
-  // ── Change this to your hosted backend URL after deploying ──
-  // To this:const API_URL = "https://innovai-chatbot.onrender.com";
   const API_URL = "https://innovai-chatbot.onrender.com";
 
   async function loadFilters() {
@@ -242,8 +240,6 @@
     }
   }
 
-
-  // Fill program length checkboxes
   const lengths = [
     "6 weeks","7 weeks","8 weeks","9 weeks","10 weeks",
     "1 semester","2 semesters","3 semesters","4 semesters","5 semesters",
@@ -254,7 +250,6 @@
       `<label><input type="checkbox" value="${l}"> ${l}</label>`
     ).join("");
 
-  // Read uploaded .txt file into textarea
   document.getElementById("fileInput").addEventListener("change", function() {
     const file = this.files[0];
     if (!file) return;
@@ -277,7 +272,7 @@
 
     if (!jdText) {
       document.getElementById("results").innerHTML =
-        '<div class="error"> Please paste or upload a job description first.</div>';
+        '<div class="error">⚠️ Please paste or upload a job description first.</div>';
       return;
     }
 
@@ -306,7 +301,7 @@
       renderResults(data);
     } catch(e) {
       document.getElementById("results").innerHTML =
-        `<div class="error"> Could not connect to backend. Error: ${e.message}</div>`;
+        `<div class="error">⚠️ Could not connect to backend. Error: ${e.message}</div>`;
     }
   }
 
@@ -359,7 +354,6 @@
     document.getElementById("results").innerHTML = html;
   }
 
-  // Load filters when page opens
   loadFilters();
 </script>
 </body>
