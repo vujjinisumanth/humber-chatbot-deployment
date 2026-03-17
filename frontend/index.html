@@ -227,9 +227,8 @@
 <script>
   // ── Change this to your hosted backend URL after deploying ──
   // To this:const API_URL = "https://innovai-chatbot.onrender.com";
+  const API_URL = "https://innovai-chatbot.onrender.com";
 
-
-  // Load credential filter options from backend
   async function loadFilters() {
     try {
       const res  = await fetch(`${API_URL}/filters`);
@@ -242,6 +241,7 @@
       console.error("Could not load filters", e);
     }
   }
+
 
   // Fill program length checkboxes
   const lengths = [
