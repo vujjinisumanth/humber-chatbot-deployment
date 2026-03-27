@@ -159,7 +159,7 @@
 <header>
   <div>
     <h1>🎓 Humber Program Matcher</h1>
-    <p>Match a job description to the best Humber College programs</p>
+    <p>Match a job description to top Humber Polytechnic academic programs</p>
   </div>
 </header>
 
@@ -176,7 +176,7 @@
 
       <label>Credential Type</label>
       <div class="multi-check" id="credList">
-        <label><input type="checkbox" disabled> Loading...</label>
+        <label><input type="checkbox" disabled> Loading credential types...</label>
       </div>
 
       <label>PGWP-Eligible</label>
@@ -210,12 +210,12 @@
     <div>
       <div class="main-card">
         <h3>📋 Job Description</h3>
-        <textarea id="jdText" placeholder="Paste the full job posting here..."></textarea>
+        <textarea id="jdText" placeholder="Match a job description to top Humber Polytechnic academic programs..."></textarea>
         <div class="upload-row">
           <span style="font-size:13px; color:#333; font-weight:600;">Or upload a .txt file:</span>
           <input type="file" id="fileInput" accept=".txt"/>
         </div>
-        <button class="btn" onclick="findPrograms()">🔍 Find Best Programs</button>
+        <button class="btn" onclick="findPrograms()">🔍 Find Top Academic Program Match</button>
       </div>
 
       <div id="results"></div>
@@ -228,15 +228,24 @@
   const API_URL = "https://innovai-chatbot-1.onrender.com";
 
   async function loadFilters() {
+    const credList = document.getElementById("credList");
     try {
       const res  = await fetch(`${API_URL}/filters`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       const data = await res.json();
-      const credList = document.getElementById("credList");
+      if (!data.credentials || data.credentials.length === 0) {
+        credList.innerHTML = '<label>No credential types available.</label>';
+        return;
+      }
       credList.innerHTML = data.credentials.map(c =>
         `<label><input type="checkbox" value="${c}"> ${c}</label>`
       ).join("");
     } catch(e) {
       console.error("Could not load filters", e);
+      credList.innerHTML =
+        `<label style="color:red;">Failed to load credential types. Please try again later.</label>`;
     }
   }
 
@@ -277,7 +286,7 @@
     }
 
     document.getElementById("results").innerHTML =
-      '<div class="loading">⏳ Finding best matches...</div>';
+      '<div class="loading">⏳ Finding top academic program matches...</div>';
 
     try {
       const form = new FormData();
@@ -290,6 +299,9 @@
       form.append("length_selected", lengthChecked);
 
       const res  = await fetch(`${API_URL}/match`, { method: "POST", body: form });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       const data = await res.json();
 
       if (!data.results || data.results.length === 0) {
@@ -309,7 +321,7 @@
     const best = data.results[0];
     let html = `
       <div class="best-match">
-        <h3>🏆 Best Match</h3>
+        <h3>🏆 Top Academic Program Match</h3>
         <div class="match-badge">${best.match_pct}% Match</div>
         <p>
           <b>Program:</b> ${best.program_name}<br>
@@ -323,7 +335,7 @@
         </p>
       </div>
       <div class="main-card">
-        <p class="status">Searched <b>${data.programs_searched}</b> programs — showing top <b>${data.top_k}</b></p>
+        <p class="status">Searched <b>${data.programs_searched}</b> programs — showing top <b>${data.top_k}</b> matches</p>
         <table>
           <thead>
             <tr>
