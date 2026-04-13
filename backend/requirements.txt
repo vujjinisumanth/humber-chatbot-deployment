@@ -8,3 +8,4 @@ lxml
 tqdm
 apscheduler
 python-multipart
+scikit-learn>=1.5.0

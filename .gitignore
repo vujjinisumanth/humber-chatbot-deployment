@@ -35,10 +35,8 @@ dist/
 
 # Output data
 output/
-*.xlsx
-*.csv
 
-# Excel temp lock files
+# Excel temp lock files ONLY
 ~$*.xlsx
 ~$*.xls
 
