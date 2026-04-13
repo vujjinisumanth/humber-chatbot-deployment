@@ -1,7 +1,10 @@
 fastapi
-uvicorn[standard]
+uvicorn
 pandas
 openpyxl
-scikit-learn
-numpy
+requests
+beautifulsoup4
+lxml
+tqdm
+apscheduler
 python-multipart
