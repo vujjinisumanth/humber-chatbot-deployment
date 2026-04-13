@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -7,8 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from matcher import load_fulltime, apply_filters, rank_programs, FULLTIME_XLSX
-from scheduler import scheduler, scrape_job, MONTHLY_DAY, MONTHLY_HOUR, MONTHLY_MINUTE
+from .matcher import load_fulltime, apply_filters, rank_programs, FULLTIME_XLSX
+from .scheduler import scheduler, scrape_job, MONTHLY_DAY, MONTHLY_HOUR, MONTHLY_MINUTE
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
 
 
 @asynccontextmanager
@@ -50,12 +55,12 @@ app.add_middleware(
 
 df = load_fulltime(FULLTIME_XLSX)
 
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 
 @app.get("/")
 def serve_frontend():
-    return FileResponse("../frontend/index.html")
+    return FileResponse(INDEX_FILE)
 
 
 @app.get("/health")
@@ -115,4 +120,4 @@ async def match_programs(
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
