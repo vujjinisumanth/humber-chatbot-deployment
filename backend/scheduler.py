@@ -3,7 +3,7 @@ import threading
 import traceback
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
-from .scraper import run_fulltime, run_cpl
+from scraper import run_fulltime, run_cpl
 
 
 RUN_ON_START = False
