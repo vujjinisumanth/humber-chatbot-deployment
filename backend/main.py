@@ -2,8 +2,9 @@ import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
+import pandas as pd
 import uvicorn
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -15,9 +16,26 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
 
+df = pd.DataFrame()
+
+
+def load_dataset():
+    global df
+    try:
+        df = load_fulltime(FULLTIME_XLSX)
+        print(f"[DATA] Loaded {len(df)} programs from {FULLTIME_XLSX}")
+    except FileNotFoundError:
+        df = pd.DataFrame()
+        print(f"[WARN] Dataset file not found: {FULLTIME_XLSX}")
+    except Exception as e:
+        df = pd.DataFrame()
+        print(f"[WARN] Failed to load dataset: {e}")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    load_dataset()
+
     if not scheduler.running:
         scheduler.add_job(
             scrape_job,
@@ -53,8 +71,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-df = load_fulltime(FULLTIME_XLSX)
-
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 
@@ -67,7 +83,9 @@ def serve_frontend():
 def health():
     return {
         "status": "running",
-        "programs_loaded": len(df),
+        "programs_loaded": len(df) if not df.empty else 0,
+        "dataset_loaded": not df.empty,
+        "dataset_path": FULLTIME_XLSX,
         "scheduler_running": scheduler.running,
         "monthly_schedule": {
             "day": MONTHLY_DAY,
@@ -79,6 +97,12 @@ def health():
 
 @app.get("/filters")
 def get_filters():
+    if df.empty:
+        raise HTTPException(
+            status_code=503,
+            detail="Dataset not loaded. Make sure Humber_FullTime2.xlsx exists in backend/output/."
+        )
+
     cred_options = sorted([x for x in df["CREDENTIALS"].unique().tolist() if x])
     return {"credentials": cred_options}
 
@@ -94,6 +118,12 @@ async def match_programs(
     length_selected: str = Form(""),
     wil_choice: str = Form("All")
 ):
+    if df.empty:
+        raise HTTPException(
+            status_code=503,
+            detail="Dataset not loaded. Make sure Humber_FullTime2.xlsx exists in backend/output/."
+        )
+
     if file:
         content = await file.read()
         jd_text = content.decode("utf-8", errors="ignore")
