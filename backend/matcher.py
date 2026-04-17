@@ -1,13 +1,13 @@
 import re
 import numpy as np
+import os
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# ✅ Fix (goes one level up from backend/ to find output/)
-import os
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FULLTIME_XLSX = os.path.join(BASE_DIR, "output", "Humber_FullTime2.xlsx")
+CPL_XLSX = os.path.join(BASE_DIR, "output", "Humber_CPL2.xlsx")
 
 
 def clean_text(x: str) -> str:
