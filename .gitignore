@@ -1,44 +1,16 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual environments
 .venv/
 venv/
-env/
-ENV/
-
-# Env files
-.env
-
-# IDE
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
 .idea/
 .vscode/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Test / coverage
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Build
-build/
-dist/
-*.egg-info/
-
-# Output data
-output/
-
-# Excel temp lock files ONLY
-~$*.xlsx
-~$*.xls
-
-# Logs
+.env
+.env.*
 *.log
+*.tmp
+.DS_Store
+
+backend/output/~$*.xlsx
